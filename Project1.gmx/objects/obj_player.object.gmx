@@ -35,6 +35,8 @@ originalX =x;
 originalY =y;
 rocketspeed = 0.9;
 start=false;
+topVert = 0;
+bottomVert = 1000;
 </string>
           </argument>
         </arguments>
@@ -62,39 +64,33 @@ start=false;
 key_jump = keyboard_check_pressed(vk_space);
 key_rocket = keyboard_check(ord('F'));
 
-key_left = keyboard_check(vk_left);
-key_right = keyboard_check(vk_right);
-
-global.angle +=  key_right - key_left;
-
-
 if(vsp &lt;10) vsp +=grav;
 if(hsp &gt;0) hsp -=0.05;
 if(hsp&lt;0) hsp =0;
 
 totalPower = 25;
+if(start==false){
+    image_angle = 360 - global.angle;
+}
 calcAngle = degtorad(global.angle);
 
 if(key_jump)
-{
-    start = true;
-}
-
-if(key_jump==1)
 {   
-    extraHoriz = totalPower * sin(calcAngle);
-    extraVert = totalPower * cos(calcAngle);    
-    vsp = -extraVert;
-    hsp += extraHoriz;
-}
-if(key_rocket==1){
-    vsp += -rocketspeed;
-    hsp += rocketspeed;
-}
+    start = true;    
+    
+    if(key_jump==1)
+    {   
+        extraHoriz = totalPower * sin(calcAngle);
+        extraVert = totalPower * cos(calcAngle);    
+        vsp = -extraVert;
+        hsp += extraHoriz;
+    }
+    if(key_rocket==1){
+        vsp += -rocketspeed;
+        hsp += rocketspeed;
+    }
 
-if(hsp&gt;22)hsp=22;
-if(vsp&gt;22)vsp=22;
-
+}
 //hoz collision
 if(place_meeting(x+hsp,y, obj_wall)){
     while(!place_meeting(x+sign(hsp),y, obj_wall)){
@@ -105,16 +101,34 @@ if(place_meeting(x+hsp,y, obj_wall)){
 
 //vert collision
 if(place_meeting(x,y + vsp, obj_wall)){
+    //show_message("vsp = " + string(vsp));
     while(!place_meeting(x,y+sign(vsp), obj_wall)){
         y+=sign(vsp);
+    }    
+    vsp = -vsp+vsp/6+2;  
+    if(abs(vsp)&lt;3){
+        vsp=0;
     }
-    vsp =0;
 }
 
 distanceTravelled += hsp;
 if(start){
+    if(vsp&gt;topVert)
+    {
+        topVert = vsp;
+    }
+    if(vsp&lt;bottomVert){
+        bottomVert = vsp;
+    }
     x += hsp;
     y += vsp;
+    if(vsp!=0&amp;&amp;hsp!=0)
+    {
+        image_angle-=10;
+    }
+    else{
+        image_angle =0;
+    }
 }
 global.reset = keyboard_check_pressed(ord('R'));
 
@@ -151,7 +165,7 @@ if(global.reset == 1){
           <argument>
             <kind>1</kind>
             <string>draw_self();
-draw_text(view_xview[0] + 32, view_yview[0] + 32, "Distance: " + string_format(distanceTravelled,0,0)+'#' +string_format(global.angle,0,0));
+draw_text(view_xview[0] + 32, view_yview[0] + 32, "Distance: " + string_format(distanceTravelled,0,0)+'#' +string_format(global.angle,0,0)+'#Top:' +string_format(topVert,0,0)+'#Bottom:' +string_format(bottomVert,0,0));
 
 </string>
           </argument>
